@@ -9,7 +9,8 @@ Android8.0之后
 
 1.如何开启未知应用安装权限的入口，并设置允许安装？
 在AndroidManifest清单文件中添加权限
-<uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
+`<uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>`
+
 2.如果为8.0以上系统，则判断是否有未知应用安装权限
 ```
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
