@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">APPUpdateVersion</string>
+
+    <string name="is_downloading">正在下载</string>
+    <string name="click_install">点击安装</string>
+    <string name="download_fail">下载失败</string>
+    <string name="version_coode_number">版本号：</string>
+    <string name="install_failed">安装失败</string>
+    <string name="installing_apk">正在安装程序</string>
+    <string name="dialog_notify_positive">立即更新</string>
+    <string name="dialog_notify_negative">含泪拒绝</string>
+    <string name="have_new_version">有新版本，快去尝鲜吧</string>
+
+</resources>
