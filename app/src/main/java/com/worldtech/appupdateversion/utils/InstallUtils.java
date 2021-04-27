@@ -19,7 +19,6 @@ import java.io.File;
 import static android.app.Activity.RESULT_OK;
 
 /**
- * Created by maning on 16/8/15.
  * 安装APK的工具
  */
 public class InstallUtils {

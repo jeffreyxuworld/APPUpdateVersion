@@ -59,6 +59,50 @@ Android8.0之后
 ```
 4.然后根据用户是否授权，做对应处理。
 ```
+
+    /**
+     * 安装APK工具类
+     *
+     * @param context  上下文
+     * @param filePath 文件路径
+     * @param callBack 安装界面成功调起的回调
+     */
+    public static void installAPK(Activity context, String filePath, final InstallCallBack callBack) {
+        try {
+            MNUtils.changeApkFileMode(new File(filePath));
+            Intent intent = new Intent();
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.setAction(Intent.ACTION_VIEW);
+            File apkFile = new File(filePath);
+            Uri apkUri;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                // 授予目录临时共享权限
+                String authority = context.getPackageName() + ".updateFileProvider";
+                //android适配android10安装
+                apkUri = FileProvider.getUriForFile(context, authority, apkFile); //与manifest中定义的provider中的authorities="com.yoka.tablepark.fileProvider"保持一致
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            } else {
+                apkUri = Uri.fromFile(apkFile);
+            }
+            intent.setDataAndType(apkUri, "application/vnd.android.package-archive");
+            new ActResultRequest(context).startForResult(intent, new ActForResultCallback() {
+                @Override
+                public void onActivityResult(int resultCode, Intent data) {
+                    Log.i(TAG, "onActivityResult:" + resultCode);
+                    //调起了系统安装页面
+                    if (callBack != null) {
+                        callBack.onSuccess();
+                    }
+                }
+            });
+
+        } catch (Exception e) {
+            if (callBack != null) {
+                callBack.onFail(e);
+            }
+        }
+    }
+
     private void installApk(String path) {
         InstallUtils.installAPK(this, path, new InstallUtils.InstallCallBack() {
             @Override
