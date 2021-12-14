@@ -8,7 +8,6 @@ public class NetWorkUtils {
     /**
      * 判断是否有网络连接
      * @param context
-     * @return
      */
     public static boolean isNetworkConnected(Context context) {
         if (context != null) {

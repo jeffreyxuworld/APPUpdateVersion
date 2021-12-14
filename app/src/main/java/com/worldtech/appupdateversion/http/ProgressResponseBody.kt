@@ -1,76 +1,58 @@
-package com.worldtech.appupdateversion.http;
+package com.worldtech.appupdateversion.http
 
-import android.os.Handler;
-import android.os.Looper;
-
-import java.io.IOException;
-
-import okhttp3.MediaType;
-import okhttp3.ResponseBody;
-import okio.Buffer;
-import okio.BufferedSource;
-import okio.ForwardingSource;
-import okio.Okio;
-import okio.Source;
+import android.os.Handler
+import okhttp3.ResponseBody
+import android.os.Looper
+import okhttp3.MediaType
+import okio.*
+import kotlin.Throws
+import java.io.IOException
 
 /**
  * 下载监听所用
  */
-public class ProgressResponseBody extends ResponseBody {
-
-    private final ResponseBody responseBody;
-    private final AbsFileProgressCallback progressListener;
-    private BufferedSource bufferedSource;
-    private Handler mUIHandler = new Handler(Looper.getMainLooper());
-
-    public ProgressResponseBody(ResponseBody mResponseBody, AbsFileProgressCallback mProgressListener) {
-        responseBody = mResponseBody;
-        progressListener = mProgressListener;
+class ProgressResponseBody(
+    private val responseBody: ResponseBody,
+    private val progressListener: AbsFileProgressCallback
+) : ResponseBody() {
+    private var bufferedSource: BufferedSource? = null
+    private val mUIHandler = Handler(Looper.getMainLooper())
+    override fun contentType(): MediaType? {
+        return responseBody.contentType()
     }
 
-    @Override
-    public MediaType contentType() {
-        return responseBody.contentType();
+    override fun contentLength(): Long {
+        return responseBody.contentLength()
     }
 
-    @Override
-    public long contentLength() {
-        return responseBody.contentLength();
-    }
-
-    @Override
-    public BufferedSource source() {
+    override fun source(): BufferedSource {
         if (bufferedSource == null) {
-            bufferedSource = Okio.buffer(source(responseBody.source()));
+            bufferedSource = Okio.buffer(source(responseBody.source()))
         }
-        return bufferedSource;
+        return bufferedSource!!
     }
 
-    private Source source(Source source) {
-        return new ForwardingSource(source) {
-            long totalBytesRead = 0L;
-
-            @Override
-            public long read(Buffer sink, long byteCount) throws IOException {
-                long bytesRead = super.read(sink, byteCount);
+    private fun source(source: Source): Source {
+        return object : ForwardingSource(source) {
+            var totalBytesRead = 0L
+            @Throws(IOException::class)
+            override fun read(sink: Buffer, byteCount: Long): Long {
+                val bytesRead = super.read(sink, byteCount)
                 // read() returns the number of bytes read, or -1 if this source is exhausted.
-                totalBytesRead += bytesRead != -1 ? bytesRead : 0;
-
-                final long finalBytesRead = bytesRead;
-                mUIHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        progressListener.onProgress(totalBytesRead, responseBody.contentLength(), finalBytesRead == -1);
-                    }
-                });
-                return bytesRead;
+                totalBytesRead += if (bytesRead != -1L) bytesRead else 0
+                mUIHandler.post {
+                    progressListener.onProgress(
+                        totalBytesRead,
+                        responseBody.contentLength(),
+                        bytesRead == -1L
+                    )
+                }
+                return bytesRead
             }
-        };
+        }
     }
 
-    public interface ProgressListener {
-        void update(long bytesRead, long contentLength, boolean done);
+    interface ProgressListener {
+        fun update(bytesRead: Long, contentLength: Long, done: Boolean)
     }
-
-
 }

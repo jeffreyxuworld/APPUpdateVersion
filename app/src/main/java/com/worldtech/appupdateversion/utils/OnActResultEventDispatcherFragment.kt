@@ -1,36 +1,30 @@
-package com.worldtech.appupdateversion.utils;
+package com.worldtech.appupdateversion.utils
 
-import android.app.Fragment;
-import android.content.Intent;
-import android.os.Bundle;
-import android.util.SparseArray;
+import android.app.Fragment
+import android.util.SparseArray
+import android.os.Bundle
+import android.content.Intent
 
-public class OnActResultEventDispatcherFragment extends Fragment {
-
-    public static final String TAG = "on_act_result_event_dispatcher";
-
-    private SparseArray<ActForResultCallback> mCallbacks = new SparseArray<>();
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setRetainInstance(true);
+class OnActResultEventDispatcherFragment : Fragment() {
+    private val mCallbacks = SparseArray<ActForResultCallback>()
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        retainInstance = true
     }
 
-    public void startForResult(Intent intent, ActForResultCallback callback) {
-        mCallbacks.put(callback.hashCode(), callback);
-        startActivityForResult(intent, callback.hashCode());
+    fun startForResult(intent: Intent?, callback: ActForResultCallback) {
+        mCallbacks.put(callback.hashCode(), callback)
+        startActivityForResult(intent, callback.hashCode())
     }
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent) {
+        super.onActivityResult(requestCode, resultCode, data)
+        val callback = mCallbacks[requestCode]
+        mCallbacks.remove(requestCode)
+        callback?.onActivityResult(resultCode, data)
+    }
 
-        ActForResultCallback callback = mCallbacks.get(requestCode);
-        mCallbacks.remove(requestCode);
-
-        if (callback != null) {
-            callback.onActivityResult(resultCode, data);
-        }
+    companion object {
+        const val TAG = "on_act_result_event_dispatcher"
     }
 }

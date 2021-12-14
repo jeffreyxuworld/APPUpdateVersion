@@ -40,15 +40,28 @@ public class MainActivity extends AppCompatActivity {
         String versionName = "2.0.0";
         String message = "I'm message";
         long fileSize = 20;
-        FileUtils.deleteDownOldFile(this, versionName);
-        String apkDownloadPath = FileUtils.getApkDownloadPath(this, versionName);
-        isExsit = FileUtils.isUpdateFileExist(apkDownloadPath, fileSize);  // fileSize单位为b
+        try {
+            FileUtils.deleteDownOldFile(this, versionName);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        String apkDownloadPath = null;
+        try {
+            apkDownloadPath = FileUtils.getApkDownloadPath(this, versionName);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        try {
+            isExsit = FileUtils.isUpdateFileExist(apkDownloadPath, fileSize);  // fileSize单位为b
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         isMustUpdate = true;
         final int internalSetup = 1; //是否为内部更新
         // 上面的参数，可依赖于服务器的接口具体返回
 
         String positiveText = isExsit?getString(R.string.click_install):getString(R.string.dialog_notify_positive);
-        UpdateDialog updateDialog = new UpdateDialog(this, getString(R.string.have_new_version) , getString(R.string.version_coode_number) + versionName ,
+        updateDialog = new UpdateDialog(this, getString(R.string.have_new_version) , getString(R.string.version_coode_number) + versionName ,
                 message,
                 positiveText,
                 getString(R.string.dialog_notify_negative),
@@ -79,7 +92,11 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onNegative() {
-                negativeUpdateDialog();
+                try {
+                    negativeUpdateDialog();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
 
             }
         });
@@ -125,7 +142,11 @@ public class MainActivity extends AppCompatActivity {
 //                LogUtil.d("ttt","InstallUtils onFail e" + e.getMessage());
                 Toast.makeText(MainActivity.this, R.string.download_fail, Toast.LENGTH_SHORT).show();
                 updateDialog.setPositiveButtonDownload();
-                FileUtils.deleteFile(apkDownloadPath);
+                try {
+                    FileUtils.deleteFile(apkDownloadPath);
+                } catch (Exception exception) {
+                    exception.printStackTrace();
+                }
                 updateDialog.setProgressCount("0");
                 isInDownload = false;
             }
@@ -134,7 +155,11 @@ public class MainActivity extends AppCompatActivity {
             public void cancle() {
                 isExsit = false;
 //                LogUtil.d("ttt","InstallUtils cancle");
-                FileUtils.deleteFile(apkDownloadPath);
+                try {
+                    FileUtils.deleteFile(apkDownloadPath);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 updateDialog.setProgressCount("0");
                 isInDownload = false;
             }
@@ -242,7 +267,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void negativeUpdateDialog() {
+    private void negativeUpdateDialog() throws Exception {
         updateDialog.dismiss();
         InstallUtils.cancleDownload();
         FileUtils.deleteFile(apkDownloadPath);

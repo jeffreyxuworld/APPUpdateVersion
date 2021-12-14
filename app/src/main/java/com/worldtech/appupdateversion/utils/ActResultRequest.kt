@@ -1,37 +1,27 @@
-package com.worldtech.appupdateversion.utils;
+package com.worldtech.appupdateversion.utils
 
-import android.app.Activity;
-import android.app.FragmentManager;
-import android.content.Intent;
+import android.app.Activity
+import android.app.FragmentManager
+import android.content.Intent
 
-public class ActResultRequest {
-    private OnActResultEventDispatcherFragment fragment;
-
-    public ActResultRequest(Activity activity) {
-        fragment = getEventDispatchFragment(activity);
+class ActResultRequest(activity: Activity) {
+    private val fragment: OnActResultEventDispatcherFragment
+    private fun getEventDispatchFragment(activity: Activity): OnActResultEventDispatcherFragment {
+        val fragmentManager = activity.fragmentManager
+        return findEventDispatchFragment(fragmentManager)
     }
 
-    private OnActResultEventDispatcherFragment getEventDispatchFragment(Activity activity) {
-        final FragmentManager fragmentManager = activity.getFragmentManager();
+    private fun findEventDispatchFragment(manager: FragmentManager): OnActResultEventDispatcherFragment {
+        return manager.findFragmentByTag(OnActResultEventDispatcherFragment.TAG) as OnActResultEventDispatcherFragment
+    }
 
-        OnActResultEventDispatcherFragment fragment = findEventDispatchFragment(fragmentManager);
-        if (fragment == null) {
-            fragment = new OnActResultEventDispatcherFragment();
-            fragmentManager
-                    .beginTransaction()
-                    .add(fragment, OnActResultEventDispatcherFragment.TAG)
-                    .commitAllowingStateLoss();
-            fragmentManager.executePendingTransactions();
+    fun startForResult(intent: Intent?, callback: ActForResultCallback?) {
+        if (callback != null) {
+            fragment.startForResult(intent, callback)
         }
-        return fragment;
     }
 
-    private OnActResultEventDispatcherFragment findEventDispatchFragment(FragmentManager manager) {
-        return (OnActResultEventDispatcherFragment) manager.findFragmentByTag(OnActResultEventDispatcherFragment.TAG);
+    init {
+        fragment = getEventDispatchFragment(activity)
     }
-
-    public void startForResult(Intent intent, ActForResultCallback callback) {
-        fragment.startForResult(intent, callback);
-    }
-
 }

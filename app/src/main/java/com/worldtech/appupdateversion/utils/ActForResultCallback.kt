@@ -1,9 +1,7 @@
-package com.worldtech.appupdateversion.utils;
+package com.worldtech.appupdateversion.utils
 
-import android.content.Intent;
+import android.content.Intent
 
-public interface ActForResultCallback {
-
-    void onActivityResult(int resultCode, Intent data);
-
+interface ActForResultCallback {
+    fun onActivityResult(resultCode: Int, data: Intent?)
 }

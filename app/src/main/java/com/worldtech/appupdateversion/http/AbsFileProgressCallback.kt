@@ -1,32 +1,30 @@
-package com.worldtech.appupdateversion.http;
+package com.worldtech.appupdateversion.http
 
 /**
  * 文件下载监听
  */
-public abstract class AbsFileProgressCallback {
-
+abstract class AbsFileProgressCallback {
     /**
      * 下载成功
      */
-    public abstract void onSuccess(String result);
+    abstract fun onSuccess(result: String?)
 
     /**
      */
-    public abstract void onProgress(long bytesRead, long contentLength, boolean done);
+    abstract fun onProgress(bytesRead: Long, contentLength: Long, done: Boolean)
 
     /**
      * 下载失败
      */
-    public abstract void onFailed(String errorMsg);
+    abstract fun onFailed(errorMsg: String?)
 
     /**
      * 下载开始
      */
-    public abstract void onStart();
+    abstract fun onStart()
 
     /**
      * 下载取消
      */
-    public abstract void onCancle();
-
+    abstract fun onCancle()
 }

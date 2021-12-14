@@ -1,104 +1,47 @@
-package com.worldtech.appupdateversion.http;
+package com.worldtech.appupdateversion.http
 
-import android.os.Handler;
-import android.os.Looper;
-import android.util.Log;
-
-import androidx.annotation.NonNull;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.security.cert.X509Certificate;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
-
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.Interceptor;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+import android.os.Handler
+import java.lang.NullPointerException
+import kotlin.Throws
+import java.io.IOException
+import android.util.Log
+import java.io.InputStream
+import java.io.FileOutputStream
+import java.io.File
+import java.lang.Exception
+import java.util.HashMap
+import android.os.Looper
+import okhttp3.*
+import javax.net.ssl.X509TrustManager
+import javax.net.ssl.SSLContext
+import javax.net.ssl.TrustManager
+import java.security.SecureRandom
+import java.security.NoSuchAlgorithmException
+import java.security.KeyManagementException
+import java.security.cert.X509Certificate
+import java.util.concurrent.TimeUnit
+import javax.net.ssl.HostnameVerifier
 
 /**
  * 文件上传下载相关的工具
  */
-public class DownloadFileUtils {
-    private static final String TAG = DownloadFileUtils.class.getSimpleName();
-    /**
-     * 请求的集合
-     */
-    private static HashMap<Object, Call> mCallHashMap = new HashMap<>();
-    /**
-     * 当前实例
-     */
-    private static DownloadFileUtils instance;
-    /**
-     * UI线程
-     */
-    private static Handler mUIHandler = new Handler(Looper.getMainLooper());
-
+class DownloadFileUtils private constructor() {
     /**
      * 默认AbsFileProgressCallback
      */
-    private AbsFileProgressCallback defaultFileProgressCallback = new AbsFileProgressCallback() {
-
-        @Override
-        public void onSuccess(String result) {
-
+    private val defaultFileProgressCallback: AbsFileProgressCallback =
+        object : AbsFileProgressCallback() {
+            override fun onSuccess(result: String?) {}
+            override fun onProgress(bytesRead: Long, contentLength: Long, done: Boolean) {}
+            override fun onFailed(errorMsg: String?) {}
+            override fun onStart() {}
+            override fun onCancle() {}
         }
 
-        @Override
-        public void onProgress(long bytesRead, long contentLength, boolean done) {
-
-        }
-
-        @Override
-        public void onFailed(String errorMsg) {
-
-        }
-
-        @Override
-        public void onStart() {
-
-        }
-
-        @Override
-        public void onCancle() {
-
-        }
-    };
     /**
      * 请求相关参数
      */
-    private DownloadModel downloadModel;
-
-    private DownloadFileUtils() {
-        downloadModel = new DownloadModel();
-    }
-
-    /**
-     * 回去当前实例
-     *
-     * @return
-     */
-    public static DownloadFileUtils with() {
-        instance = new DownloadFileUtils();
-        return instance;
-    }
+    private val downloadModel: DownloadModel?
 
     /**
      * 设置请求Url
@@ -106,9 +49,9 @@ public class DownloadFileUtils {
      * @param url
      * @return
      */
-    public DownloadFileUtils url(String url) {
-        downloadModel.setHttpUrl(url);
-        return instance;
+    fun url(url: String?): DownloadFileUtils? {
+        downloadModel!!.httpUrl = url
+        return instance
     }
 
     /**
@@ -117,9 +60,9 @@ public class DownloadFileUtils {
      * @param filePath
      * @return
      */
-    public DownloadFileUtils downloadPath(String filePath) {
-        downloadModel.setDownloadPath(filePath);
-        return instance;
+    fun downloadPath(filePath: String?): DownloadFileUtils? {
+        downloadModel!!.downloadPath = filePath
+        return instance
     }
 
     /**
@@ -128,9 +71,9 @@ public class DownloadFileUtils {
      * @param tag
      * @return
      */
-    public DownloadFileUtils tag(Object tag) {
-        downloadModel.setTag(tag);
-        return instance;
+    fun tag(tag: Any?): DownloadFileUtils? {
+        downloadModel!!.tag = tag
+        return instance
     }
 
     /**
@@ -139,10 +82,10 @@ public class DownloadFileUtils {
      * @param headersMap
      * @return
      */
-    public DownloadFileUtils headers(Map<String, String> headersMap) {
-        downloadModel.setHeadersMap(headersMap);
-        return instance;
-    }
+//    fun headers(headersMap: Map<String?, String?>?): DownloadFileUtils? {
+//        downloadModel!!.headersMap = headersMap
+//        return instance
+//    }
 
     /**
      * 设置单个请求头
@@ -151,271 +94,279 @@ public class DownloadFileUtils {
      * @param headerValue
      * @return
      */
-    public DownloadFileUtils addHeader(String headerKey, String headerValue) {
-        downloadModel.getHeadersMap().put(headerKey, headerValue);
-        return instance;
-    }
+//    fun addHeader(headerKey: String?, headerValue: String?): DownloadFileUtils? {
+//        downloadModel!!.headersMap[headerKey] = headerValue
+//        return instance
+//    }
 
     /**
      * 上传下载进度回调
      *
      * @param fileProgressCallback
      */
-    public void execute(AbsFileProgressCallback fileProgressCallback) {
+    fun execute(fileProgressCallback: AbsFileProgressCallback?) {
+        var fileProgressCallback = fileProgressCallback
         if (fileProgressCallback == null) {
-            fileProgressCallback = defaultFileProgressCallback;
+            fileProgressCallback = defaultFileProgressCallback
         }
-        downloadModel.setFileProgressCallback(fileProgressCallback);
+        downloadModel!!.fileProgressCallback = fileProgressCallback
         //开始请求
-        startDonwload();
+        startDonwload()
     }
 
-    private void startDonwload() {
+    private fun startDonwload() {
         if (downloadModel == null) {
-            throw new NullPointerException("OkhttpRequestModel初始化失败");
+            throw NullPointerException("OkhttpRequestModel初始化失败")
         }
         //获取参数
         //请求地址
-        String httpUrl = downloadModel.getHttpUrl();
+        val httpUrl = downloadModel.httpUrl
         //请求Tag
-        Object tag = downloadModel.getTag();
+        var tag = downloadModel.tag
         if (tag == null) {
-            tag = httpUrl;
+            tag = httpUrl
         }
         //请求头
-        Map<String, String> headersMap = downloadModel.getHeadersMap();
+        val headersMap = downloadModel.headersMap
         //下载保存的路径
-        final String downloadPath = downloadModel.getDownloadPath();
+        val downloadPath = downloadModel.downloadPath
         //文件回调
-        final AbsFileProgressCallback fileProgressCallback = downloadModel.getFileProgressCallback();
+        val fileProgressCallback = downloadModel.fileProgressCallback
 
         //获取OkHttpClient
-        final OkHttpClient.Builder okhttpBuilder = getOkhttpDefaultBuilder();
+        val okhttpBuilder = okhttpDefaultBuilder
         //初始化请求
-        final Request.Builder requestBuild = new Request.Builder();
+        val requestBuild = Request.Builder()
         //添加请求地址
-        requestBuild.url(httpUrl);
+        requestBuild.url(httpUrl)
         //添加请求头
-        if (headersMap != null && headersMap.size() > 0) {
-            for (String key : headersMap.keySet()) {
-                requestBuild.addHeader(key, headersMap.get(key));
+        if (headersMap != null && headersMap.size > 0) {
+            for (key in headersMap.keys) {
+                requestBuild.addHeader(key, headersMap[key])
             }
         }
-        okhttpBuilder.addNetworkInterceptor(new Interceptor() {
-            @Override
-            public Response intercept(Chain chain) throws IOException {
-                Response originalResponse = chain.proceed(chain.request());
-                return originalResponse.newBuilder()
-                        .body(new ProgressResponseBody(originalResponse.body(), fileProgressCallback))
-                        .build();
-            }
-        });
-        mUIHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                fileProgressCallback.onStart();
-            }
-        });
-        Call call = okhttpBuilder.build().newCall(requestBuild.get().build());
+        okhttpBuilder.addNetworkInterceptor { chain ->
+            val originalResponse = chain.proceed(chain.request())
+            originalResponse.newBuilder()
+                .body(ProgressResponseBody(originalResponse.body()!!, fileProgressCallback!!))
+                .build()
+        }
+        mUIHandler.post { fileProgressCallback!!.onStart() }
+        val call = okhttpBuilder.build().newCall(requestBuild.get().build())
         //添加请求到集合
-        mCallHashMap.put(tag, call);
-        call.enqueue(new Callback() {
-            @Override
-            public void onFailure(final Call call, final IOException e) {
-                Log.e(TAG, "onFailure:" + e.toString());
-                mUIHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (call.isCanceled()) {
-                            // 下载取消
-                            fileProgressCallback.onCancle();
+        mCallHashMap!![tag] = call
+        call.enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                Log.e(TAG, "onFailure:$e")
+                mUIHandler.post {
+                    if (call.isCanceled) {
+                        // 下载取消
+                        fileProgressCallback!!.onCancle()
+                    } else {
+                        // 下载失败
+                        fileProgressCallback!!.onFailed(e.toString())
+                    }
+                }
+            }
+
+            @Throws(IOException::class)
+            override fun onResponse(call: Call, response: Response) {
+                var `is`: InputStream? = null
+                val buf = ByteArray(2048)
+                var len = 0
+                var fos: FileOutputStream? = null
+                // 储存下载文件的目录
+                if (downloadPath != null) {
+                    checkDownloadFilePath(downloadPath)
+                }
+                try {
+                    `is` = response.body()!!.byteStream()
+                    val total = response.body()!!.contentLength()
+                    val file = File(downloadPath)
+                    fos = FileOutputStream(file)
+                    var sum: Long = 0
+                    while (`is`.read(buf).also { len = it } != -1) {
+                        fos.write(buf, 0, len)
+                        sum += len.toLong()
+                    }
+                    fos.flush()
+                    mUIHandler.post { // 下载完成
+                        fileProgressCallback!!.onSuccess("")
+                    }
+                } catch (e: Exception) {
+                    mUIHandler.post {
+                        Log.e(TAG, "onFailure:" + e.message)
+                        if (e.message != null && e.message == "Socket closed") {
+                            // 下载失败
+                            fileProgressCallback!!.onCancle()
                         } else {
                             // 下载失败
-                            fileProgressCallback.onFailed(e.toString());
+                            fileProgressCallback!!.onFailed(e.toString())
                         }
-
                     }
-                });
-            }
-
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                InputStream is = null;
-                byte[] buf = new byte[2048];
-                int len = 0;
-                FileOutputStream fos = null;
-                // 储存下载文件的目录
-                checkDownloadFilePath(downloadPath);
-                try {
-                    is = response.body().byteStream();
-                    long total = response.body().contentLength();
-                    File file = new File(downloadPath);
-                    fos = new FileOutputStream(file);
-                    long sum = 0;
-                    while ((len = is.read(buf)) != -1) {
-                        fos.write(buf, 0, len);
-                        sum += len;
-                    }
-                    fos.flush();
-                    mUIHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            // 下载完成
-                            fileProgressCallback.onSuccess("");
-                        }
-                    });
-                } catch (final Exception e) {
-                    mUIHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            Log.e(TAG, "onFailure:" + e.getMessage());
-                            if (e.getMessage() != null && e.getMessage().equals("Socket closed")) {
-                                // 下载失败
-                                fileProgressCallback.onCancle();
-                            } else {
-                                // 下载失败
-                                fileProgressCallback.onFailed(e.toString());
-                            }
-                        }
-                    });
                 } finally {
                     try {
-                        if (is != null) {
-                            is.close();
-                        }
-                    } catch (IOException e) {
+                        `is`?.close()
+                    } catch (e: IOException) {
                     }
                     try {
-                        if (fos != null) {
-                            fos.close();
-                        }
-                    } catch (IOException e) {
+                        fos?.close()
+                    } catch (e: IOException) {
                     }
                 }
-
             }
-        });
-
+        })
     }
 
+    companion object {
+        private val TAG = DownloadFileUtils::class.java.simpleName
 
-    private static void checkDownloadFilePath(String localFilePath) {
-        File path = new File(localFilePath.substring(0,
-                localFilePath.lastIndexOf("/") + 1));
-        File file = new File(localFilePath);
-        if (!path.exists()) {
-            path.mkdirs();
+        /**
+         * 请求的集合
+         */
+        private val mCallHashMap: HashMap<Any?, Call>? = HashMap()
+
+        /**
+         * 当前实例
+         */
+        private var instance: DownloadFileUtils? = null
+
+        /**
+         * UI线程
+         */
+        private val mUIHandler = Handler(Looper.getMainLooper())
+
+        /**
+         * 回去当前实例
+         *
+         * @return
+         */
+        @JvmStatic
+        fun with(): DownloadFileUtils? {
+            instance = DownloadFileUtils()
+            return instance
         }
-        if (!file.exists()) {
+
+
+
+        private fun checkDownloadFilePath(localFilePath: String) {
+            val path = File(
+                localFilePath.substring(
+                    0,
+                    localFilePath.lastIndexOf("/") + 1
+                )
+            )
+            val file = File(localFilePath)
+            if (!path.exists()) {
+                path.mkdirs()
+            }
+            if (!file.exists()) {
+                try {
+                    file.createNewFile()
+                } catch (e: IOException) {
+                    e.printStackTrace()
+                }
+            }
+        }//默认信任所有的证书
+
+        /**
+         * 获取默认OkHttpClient.Builder
+         *
+         * @return
+         */
+        val okhttpDefaultBuilder: OkHttpClient.Builder
+            get() {
+                //默认信任所有的证书
+                val trustManager: X509TrustManager = object : X509TrustManager {
+                    override fun checkClientTrusted(
+                        chain: Array<X509Certificate>,
+                        authType: String
+                    ) {
+                    }
+
+                    override fun checkServerTrusted(
+                        chain: Array<X509Certificate>,
+                        authType: String
+                    ) {
+                    }
+
+                    override fun getAcceptedIssuers(): Array<X509Certificate?> {
+                        return arrayOfNulls(0)
+                    }
+                }
+                var sslContext: SSLContext? = null
+                try {
+                    sslContext = SSLContext.getInstance("SSL")
+                    sslContext.init(null, arrayOf<TrustManager>(trustManager), SecureRandom())
+                } catch (e: NoSuchAlgorithmException) {
+                    e.printStackTrace()
+                } catch (e: KeyManagementException) {
+                    e.printStackTrace()
+                }
+                val sslSocketFactory = sslContext!!.socketFactory
+                val DO_NOT_VERIFY = HostnameVerifier { hostname, session -> true }
+                val builder = OkHttpClient.Builder()
+                builder.connectTimeout(30000, TimeUnit.MILLISECONDS)
+                builder.readTimeout(30000, TimeUnit.MILLISECONDS)
+                builder.writeTimeout(30000, TimeUnit.MILLISECONDS)
+                builder.sslSocketFactory(sslSocketFactory, trustManager)
+                builder.hostnameVerifier(DO_NOT_VERIFY)
+                return builder
+            }
+
+        /**
+         * 取消一个请求
+         *
+         * @param tag
+         */
+        @JvmStatic
+        fun cancle(tag: Any?) {
             try {
-                file.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    /**
-     * 获取默认OkHttpClient.Builder
-     *
-     * @return
-     */
-    @NonNull
-    public static OkHttpClient.Builder getOkhttpDefaultBuilder() {
-        //默认信任所有的证书
-        X509TrustManager trustManager = new X509TrustManager() {
-            @Override
-            public void checkClientTrusted(X509Certificate[] chain, String authType) {
-            }
-
-            @Override
-            public void checkServerTrusted(X509Certificate[] chain, String authType) {
-            }
-
-            @Override
-            public X509Certificate[] getAcceptedIssuers() {
-                X509Certificate[] x509Certificates = new X509Certificate[0];
-                return x509Certificates;
-            }
-        };
-        SSLContext sslContext = null;
-        try {
-            sslContext = SSLContext.getInstance("SSL");
-            sslContext.init(null, new TrustManager[]{trustManager}, new SecureRandom());
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (KeyManagementException e) {
-            e.printStackTrace();
-        }
-        SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
-        HostnameVerifier DO_NOT_VERIFY = new HostnameVerifier() {
-            @Override
-            public boolean verify(String hostname, SSLSession session) {
-                return true;
-            }
-        };
-
-        OkHttpClient.Builder builder = new OkHttpClient.Builder();
-        builder.connectTimeout(30000, TimeUnit.MILLISECONDS);
-        builder.readTimeout(30000, TimeUnit.MILLISECONDS);
-        builder.writeTimeout(30000, TimeUnit.MILLISECONDS);
-        builder.sslSocketFactory(sslSocketFactory, trustManager);
-        builder.hostnameVerifier(DO_NOT_VERIFY);
-        return builder;
-    }
-
-    /**
-     * 取消一个请求
-     *
-     * @param tag
-     */
-    public static void cancle(Object tag) {
-        try {
-            if (mCallHashMap != null && mCallHashMap.size() > 0) {
-                if (mCallHashMap.containsKey(tag)) {
-                    //获取对应的Call
-                    Call call = mCallHashMap.get(tag);
-                    if (call != null) {
-                        //如果没有被取消 执行取消的方法
-                        if (!call.isCanceled()) {
-                            call.cancel();
+                if (mCallHashMap != null && mCallHashMap.size > 0) {
+                    if (mCallHashMap.containsKey(tag)) {
+                        //获取对应的Call
+                        val call = mCallHashMap[tag]
+                        if (call != null) {
+                            //如果没有被取消 执行取消的方法
+                            if (!call.isCanceled) {
+                                call.cancel()
+                            }
+                            //移除对应的KEY
+                            mCallHashMap.remove(tag)
                         }
-                        //移除对应的KEY
-                        mCallHashMap.remove(tag);
                     }
                 }
+            } catch (e: Exception) {
             }
-        } catch (Exception e) {
-
         }
-    }
 
-    /**
-     * 取消所有请求
-     */
-    public static void cancleAll() {
-        try {
-            if (mCallHashMap != null && mCallHashMap.size() > 0) {
-                //获取KEY的集合
-                Set<Map.Entry<Object, Call>> keyEntries = mCallHashMap.entrySet();
-                for (Map.Entry<Object, Call> entry : keyEntries) {
-                    //key
-                    Object key = entry.getKey();
-                    //获取对应的Call
-                    Call call = entry.getValue();
-                    if (call != null) {
-                        //如果没有被取消 执行取消的方法
-                        if (!call.isCanceled()) {
-                            call.cancel();
+        /**
+         * 取消所有请求
+         */
+        fun cancleAll() {
+            try {
+                if (mCallHashMap != null && mCallHashMap.size > 0) {
+                    //获取KEY的集合
+                    val keyEntries: Set<Map.Entry<Any?, Call>> = mCallHashMap.entries
+                    for ((key, call) in keyEntries) {
+                        //key
+                        //获取对应的Call
+                        if (call != null) {
+                            //如果没有被取消 执行取消的方法
+                            if (!call.isCanceled) {
+                                call.cancel()
+                            }
+                            //移除对应的KEY
+                            mCallHashMap.remove(key)
                         }
-                        //移除对应的KEY
-                        mCallHashMap.remove(key);
                     }
                 }
+            } catch (e: Exception) {
             }
-        } catch (Exception e) {
-
         }
     }
 
+    init {
+        downloadModel = DownloadModel()
+    }
 }
